@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Hearts NPC Project - IO Specification</title>
+    <style type="text/css">
+        .null {
+	        background-color: #ddd;
+	        color: #999;
+        }
+        .newline {
+            background-color: #ffc;
+	        color: #aaa;
+        }
+        .center {
+	        text-align: center;
+        }
+        table {
+            font-size: small;
+        }
+    </style>
+</head>
+<body>
+    <h1>Hearts NPC Project - IO Specification</h1>
+    <h2>Definitions:</h2>
+    <ul>
+        <li>A round is when each player have to play a card from their hand (i.e. a trick).</li>
+        <li>A game consists of 13 rounds (tricks).
+    </ul>
+    <h2>Sample IO Interaction:</h2>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Phase</th>
+                <th>Input from judge<br />(via STDIN)</th>
+                <th>Output from agent<br />(via STDOUT)</th>
+                <th>Explanation</th>
+                <th>Timeout</th>
+                <th>Line no<br />(player.java)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td rowspan="4">1. Initialization</td>
+                <td class="null"><code><pre></pre></code></td>
+                <td><code><pre>READY<span class="newline">\n</span></pre></code></td>
+                <td>
+                    Signals the judge that your agent is ready.
+                </td>
+                <td>No Limit</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>0<span class="newline">\n</span></pre></code></td>
+                <td class="null"><code><pre></pre></code></td>
+                <td>
+                    The first line from the judge is your player ID. This is an integer from 0 to 3 inclusive. Player 1 is on the left of Player 0, Player 2 is on the left of Player 1, etc. Since the game proceeds in counter-clockwise direction, if player 0 just played a card, then it will be player 1's turn to play a card, unless player 1 started the round.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>H8<span class="newline">\n</span>
+D5<span class="newline">\n</span>
+S8<span class="newline">\n</span>
+C3<span class="newline">\n</span>
+H2<span class="newline">\n</span>
+H1<span class="newline">\n</span>
+C10<span class="newline">\n</span>
+S10<span class="newline">\n</span>
+S3<span class="newline">\n</span>
+S11<span class="newline">\n</span>
+H11<span class="newline">\n</span>
+C13<span class="newline">\n</span>
+C12<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    The next 13 lines are the 13 hand cards you are dealt, in no particular order (i.e. not sorted). The first character on each line specifies the suite of the card (S = Spades, H = Hearts, C = Clubs, D = Diamonds) and the rest of the line specifies its rank (1-13 = A-K). <strong>Remember, there is a catch: S1 (Aces of Spades) > S13 (King of Spades)!</strong> Also, this list might not be final because there might be a card-passing phase. If you do not wish to implement a card-passing strategy, then you can choose to ignore this initial list as the final list will be echoed to you again after the cards-passing stage.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="newline"><code><pre>blank line (\n)</pre></code></td>
+                <td class="null"></td>
+                <td>
+                    There is a blank line (i.e. a just a \n) after the input of each phase to aid alignment. Note that a blank line is DIFFERENT from no input (the grey boxes). For no input, there is nothing you have to do because literally nothing was sent from the judge. <strong>However, for a blank line, you DO have to "consume" it (i.e. <code>in.nextLine()</code> or <code>gets(buff)</code> or ...) or the IO will be mis-aligned.</strong>
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="4">2. Card Passing</td>
+                <td><code><pre>PL<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line indicates the direction of the pass. It is going to be one of <code>PL</code> (pass left), <code>PR</code> (pass right), <code>PA</code> (pass across) or <code>NP</code> (no pass).
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>1<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells you who you are passing to, which is a player ID from 0 to 3 inclusive. In the case of <code>NP</code>, it will be your OWN player ID.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="newline"><code><pre>blank line (\n)</pre></code></td>
+                <td class="null"></td>
+                <td>
+                    There is a blank line (i.e. a just a \n) after the input of each phase to aid alignment.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="null"></td>
+                <td><code><pre>H8<span class="newline">\n</span>
+C3<span class="newline">\n</span>
+C10<span class="newline">\n</span></pre></code></td>
+                <td>
+                    You should then tell the judge which THREE cards you would like to pass, one on each line. If some of your choices are INVALID (e.g. you do not own that card, invalid format, etc), then the judge will replace that response with a randomly picked (but valid) card from your hand. You algorithm should be fast. <strong>The timeout for this part is 30 seconds.</strong> If you go over that time limit, the judge will take over and pick for you. <strong>In the case of <code>NP</code>, your code should still output three lines of something.</strong> It doesn't matter what something is, because their values are completely ignored by the judge. This is done so that simplier agents that do not implement card-passing can simpliy output three junk values here, without having to distingush between the various case of passing or non-passing rounds.
+                </td>
+                <td>30 sec</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="2">2a. Card Passing (Confirmation)</td>
+                <td><code><pre>H8<span class="newline">\n</span>
+C3<span class="newline">\n</span>
+C10<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    The next three lines echo out the cards that you are passing. Normally, this should be exactly the same as what you've told the judge to pass. However, if some of your choices are invalid or an timeout occurs, you can know the judge's final decision from here. <strong>In the case of <code>NP</code>, these three lines will be some undefined junk values.</strong> You shouldn't count on them being the same as your previous response. 
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="newline"><code><pre>blank line (\n)</pre></code></td>
+                <td class="null"></td>
+                <td>
+                    There is a blank line (i.e. a just a \n) after the input of each phase to aid alignment.</strong>
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="3">3. Receiving Cards</td>
+                <td><code><pre>3<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells you who the cards are from, which is a player ID from 0 to 3 inclusive. In the case of <code>NP</code>, it will be your OWN player ID.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>S2<span class="newline">\n</span>
+H5<span class="newline">\n</span>
+D9<span class="newline">\n</span>
+D5<span class="newline">\n</span>
+S8<span class="newline">\n</span>
+H2<span class="newline">\n</span>
+H1<span class="newline">\n</span>
+S10<span class="newline">\n</span>
+S3<span class="newline">\n</span>
+S11<span class="newline">\n</span>
+H11<span class="newline">\n</span>
+C13<span class="newline">\n</span>
+C12<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    The next 13 lines are the finialized list of your hand cards. If your agent do not implement any card-passing strategy, then it might be easier for you to just ignore the previous list and store this one instead. In the case of <code>PL</code>, <code>PR</code> or <code>PA</code>, <strong>the first 3 lines are the cards that are passed on to you, but in no particular order (i.e. not sorted).</strong> The remaining 10 are the cards you originally have, minus the three cards that you have passed. There is no guarentee that their order remains the same as the list in the initialization phase. (If your agent implments card-passing, you can just ignore these 10 lines.) In the case of <code>NP</code>, these 13 lines will be the same as the previous list, althouguh the ordering might be different.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="newline"><code><pre>blank line (\n)</pre></code></td>
+                <td class="null"></td>
+                <td>
+                    There is a blank line (i.e. a just a \n) after the input of each phase to aid alignment.</strong>
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="6" class="center"><h3>*** GAME ON ***</h3></td>
+            </tr>
+            <tr>
+                <td colspan="6"><h4>Note: Phase 4, 4a and 5 will be repeated 13 times, once per round.</h4></td>
+            </tr>
+            <tr>
+                <td rowspan="7">4. Playing a Card</td>
+                <td><code><pre>0<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells the round number, which is from 0 to 12 inclusive. (i.e. first trick = round 0, second trick = round 1, etc)
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>2<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells you who started the round, which is a player ID from 0 to 3 inclusive.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>0<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells if the heart has already been broken. 1 for true (heart broken) and 0 for false (heart not yet broken).
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>2<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells how many cards have been played in this round so far.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>C2<span class="newline">\n</span>
+C1<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    The next N lines are the cards that have been played so far (in the order that they are played). This depends on the previous value, if the previous line is 2, that means there will be exactly 2 lines here.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="newline"><code><pre>blank line (\n)</pre></code></td>
+                <td class="null"></td>
+                <td>
+                    There is a blank line (i.e. a just a \n) after the input of each phase to aid alignment.</strong>
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="null"></td>
+                <td><code><pre>C13<span class="newline">\n</span></pre></code></td>
+                <td>Given the information above, you should choose a card to play from your hand. If you choice is INVALID (e.g. not following the suite, played a card with points in the first round, invalid format, etc), the judge will pick a random (but valid) card from your hand. You algorithm should be fast. <strong>The timeout for this part is 30 seconds.</strong> If you go over that time limit, the judge will take over and pick for you.</td>
+                <td>30 sec</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="2">4a. Playing a Card (Confirmation)</td>
+                <td><code><pre>C13<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    The next line echos out the card that you are playing. Normally, this should be exactly the same as what you've told the judge to play. However, if your choice is invalid or an timeout occurs, you can know the judge's final decision from here.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="newline"><code><pre>blank line (\n)</pre></code></td>
+                <td class="null"></td>
+                <td>
+                    There is a blank line (i.e. a just a \n) after the input of each phase to aid alignment.</strong>
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td rowspan="7">5. Round Summary</td>
+                <td><code><pre>0<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells the round number, which is from 0 to 12 inclusive. (i.e. first trick = round 0, second trick = round 1, etc)
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>2<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells you who started the round, which is a player ID from 0 to 3 inclusive.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>0<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells if the heart has already been broken. 1 for true (heart broken) and 0 for false (heart not yet broken).
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>C2<span class="newline">\n</span>
+C1<span class="newline">\n</span>
+C13<span class="newline">\n</span>
+C11<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    The next 4 lines are the cards that have been played in this round (in the order that they are played).
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>0<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells you who won the trick, which is a player ID from 0 to 3 inclusive.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td><code><pre>0<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    This line tells you how many points are in this trick.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="newline"><code><pre>blank line (\n)</pre></code></td>
+                <td class="null"></td>
+                <td>
+                    There is a blank line (i.e. a just a \n) after the input of each phase to aid alignment.</strong>
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="6" class="center"><h3>*** GAME ENDED ***</h3></td>
+            </tr>
+            <tr>
+                <td rowspan="3">6. Game Summary</td>
+                <td><code><pre>2<span class="newline">\n</span>
+0<span class="newline">\n</span>
+21<span class="newline">\n</span>
+3<span class="newline">\n</span></pre></code></td>
+                <td class="null"></td>
+                <td>
+                    The last four lines tell you the number of points each player gained in the game. Your score is on the (player ID)-th line.
+                </td>
+                <td class="null"></td>
+                <td></td>
+            </tr>
+            <tr>
+                <td class="newline"><code><pre>End of file (EOF)</pre></code></td>
+                <td class="null"></td>
+                <td>
+                    The judge will the close the write end of the pipe. (You can simulate this by pressing Ctrl+D in the console.) You have up to 30 seconds to do any clean-up work that you need to do, then quit cleanly. If your process is still alive after 30 seconds, it will be killed by the judge.
+                </td>
+                <td>30 sec</td>
+                <td></td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>
