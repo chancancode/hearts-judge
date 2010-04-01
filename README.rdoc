@@ -13,8 +13,7 @@ You will need Ruby for this. Get it here:
 * <b>Windows</b>: {http://rubyinstaller.org/}[http://rubyinstaller.org/]
 * <b>Everything else and extra info</b>: {http://www.ruby-lang.org/en/downloads/}[http://www.ruby-lang.org/en/downloads/]
 
-Optionally, you can install Git to help you stay up-to-date:
-{http://git-scm.com/download/}[http://git-scm.com/download/]
+Optionally, you can install {Git}[http://git-scm.com/download/] to help you stay up-to-date.
 
 If you wanna learn some basic Ruby, then go to {http://tryruby.org/}[http://tryruby.org/] and type help. Excellent tutorial there. This is not really necessary unless you wanna help me fix the script, but it's a really cool language to learn! :)
 
