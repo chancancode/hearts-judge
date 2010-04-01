@@ -10,12 +10,12 @@ It's not perfect yet, but all the basic stuff should work.
 You will need Ruby for this. Get it here:
 * <b>Mac OS</b>: it should comes with your OS install
 * <b>Linux</b>: apt-get install ruby-full
-* <b>Windows</b>: {http://rubyinstaller.org/}[http://rubyinstaller.org/]
-* <b>Everything else and extra info</b>: {http://www.ruby-lang.org/en/downloads/}[http://www.ruby-lang.org/en/downloads/]
+* <b>Windows</b>: {Ruby one-click installer}[http://rubyinstaller.org/]
+* <b>Everything else and extra info</b>, go to {Ruby's official website}[http://www.ruby-lang.org/en/downloads/]
 
 Optionally, you can install {Git}[http://git-scm.com/download/] to help you stay up-to-date.
 
-If you wanna learn some basic Ruby, then go to {http://tryruby.org/}[http://tryruby.org/] and type help. Excellent tutorial there. This is not really necessary unless you wanna help me fix the script, but it's a really cool language to learn! :)
+If you wanna learn some basic Ruby, then go to {Try Ruby}[http://tryruby.org/] and type help. Excellent tutorial there. This is not really necessary unless you wanna help me fix the script, but it's a really cool language to learn! :)
 
 
 == Install
@@ -28,7 +28,7 @@ You can grab the script using either Git or direct download.
 
 === Direct Download
 
-{http://github.com/godfreykfc/hearts-judge/downloads/}[http://github.com/godfreykfc/hearts-judge/downloads/]
+{From GitHub download page}[http://github.com/godfreykfc/hearts-judge/downloads/]
 
 
 == Update
@@ -39,7 +39,7 @@ You can grab the script using either Git or direct download.
 
 === Direct Download
 
-Download the new version from the download page and replace the stuff on your machine.
+Download the new version from the {download page}[http://github.com/godfreykfc/hearts-judge/downloads/] and replace the stuff on your machine.
 
 
 == Usage
