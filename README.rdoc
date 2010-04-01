@@ -10,10 +10,13 @@ It's not perfect yet, but all the basic stuff should work.
 You will need Ruby for this. Get it here:
 * <b>Mac OS</b>: it should comes with your OS install
 * <b>Linux</b>: apt-get install ruby-full
-* <b>Windows</b>: http://rubyinstaller.org/
-* <b>Everything else and extra info</b>: http://www.ruby-lang.org/en/downloads/
+* <b>Windows</b>: {http://rubyinstaller.org/}[http://rubyinstaller.org/]
+* <b>Everything else and extra info</b>: {http://www.ruby-lang.org/en/downloads/}[http://www.ruby-lang.org/en/downloads/]
 
-If you wanna learn some basic Ruby, then go to http://tryruby.org/ and type help. Excellent tutorial there. This is not really necessary unless you wanna help me fix the script, but it's a really cool language to learn! :)
+Optionally, you can install Git to help you stay up-to-date:
+{http://git-scm.com/download/}[http://git-scm.com/download/]
+
+If you wanna learn some basic Ruby, then go to {http://tryruby.org/}[http://tryruby.org/] and type help. Excellent tutorial there. This is not really necessary unless you wanna help me fix the script, but it's a really cool language to learn! :)
 
 
 == Install
@@ -26,7 +29,7 @@ You can grab the script using either Git or direct download.
 
 === Direct Download
 
-http://github.com/godfreykfc/hearts-judge/downloads
+{http://github.com/godfreykfc/hearts-judge/downloads/}[http://github.com/godfreykfc/hearts-judge/downloads/]
 
 
 == Update
@@ -59,6 +62,7 @@ In the near future, you will be able to specify your options using command line 
   * <b>$logger.level = Logger::DEBUG</b>, or
   * <b>$logger.level = Logger::INFO</b>
 * To change what player programs are used, change *line 62 - 65* in judge.rb. This example uses a human player (player 0), two Ruby dummies (player 1 and 3) and a Java player (player 2). <b>2> /dev/null</b> hides the STDERR output of a player program.
+
   players = [ Hearts::HumanPlayer.new(0),
               Hearts::NPCPlayer.new(1,'ruby ../ruby-example/dummy.rb 2> /dev/null'),
               Hearts::NPCPlayer.new(2,'java -classpath ../java-example/ Player 2> /dev/null'),
