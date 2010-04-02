@@ -5,14 +5,18 @@ module Hearts
     attr_reader :id
     
     def initialize(id, command)
+      $logger.info("Player #{id}='#{command}'.")
+      
       @pipe = IO.popen(command, 'r+')
       @id = id
       @cards = []
       
       # Test the agent...
-      $logger.debug("Waiting for player #{@id} to get ready.")
+      $logger.debug("Waiting for player #{@id} to get ready...")
       response = @pipe.gets.chomp!
       raise "Agent initialization error. Expecting 'READY\\n' from agent, got '#{response}'." unless response == 'READY'
+      
+      $logger.debug("Player #{id} is ready.")
       
       # Send player ID
       @pipe.puts @id
@@ -39,7 +43,7 @@ module Hearts
       # Validate
       c.map! { |e| @cards.delete validate(e, nil, true) } unless direction == :nopass
       
-      $logger.info("Player #{@id} is passing #{c.join ' '} to player #{to}.")
+      $logger.debug("Player #{@id} is passing #{c.join ' '} to player #{to}.")
       
       # Confirmation
       @pipe.puts c.join $/

@@ -5,68 +5,78 @@
 # TODO:
 #   refractor: put this in a proper class
 #   refractor: move non-core functionalities them into other files
-#   feature: implement arguments parsing
-#   feature: get agents commands agents from the arguments
-#   feature: set logger level from arguments
+#   feature: implement time limit
 #   feature: enforce "no points in first round" rule
 
-require 'Logger'
+require 'logger'
+require 'optparse'
 require 'card.rb'
 require 'human_player.rb'
 require 'npc_player.rb'
 require 'array_extension.rb'
 
+# Turn off Ruby warnings
 $VERBOSE = nil
 
-# Initialize logger
-# TODO: read level from ARGV, maybe drop global var?
-$logger = Logger.new(STDERR)
-$logger.level = Logger::DEBUG
-$logger.debug('Created logger.')
-
-
-
 # Parse arguments
-# TODO: actually parse it
-$logger.debug("ARGV.length = #{ARGV.length}")
-raise ArgumentError, 'Too many players!' if ARGV.length > 4
+# 
+# For player commands...
+# 
+# Java: ruby judge.rb "java -classpath ../java-example/ Player"
+# Ruby: ruby judge.rb "ruby ../ruby-example/dummy.rb"
+# 
+# To supress STDERR of player programs, add "2> /dev/null" to the end of the
+# command, i.e. ruby judge.rb "ruby ../ruby-example/dummy.rb 2> /dev/null"
+
+options = {}
+
+OptionParser.new do |opts|
+  opts.banner = "Usage: ruby judge.rb [options] command0 command1 ..."
+  
+  options[:shuffle] = false
+  opts.on("-s", "--shuffle", "Shuffle the players' positions") do
+    options[:verbose] = true
+  end
+  
+  options[:verbose] = false
+  opts.on("-v", "--verbose", "Verbose mode") do
+    options[:verbose] = true
+  end
+  
+  opts.on("-h", "--help", "Display this message") do
+    puts opts
+    exit
+  end
+end.parse!
+
+raise ArgumentError, "Too many players!" if ARGV.count > 4
+
+# Initialize logger
+$logger = Logger.new(STDERR)
+$logger.level = options[:verbose] ? Logger::DEBUG : Logger::INFO
+$logger.debug('Created logger.')
+$logger.debug("shuffle=#{options[:shuffle]}")
+$logger.debug("verbose=#{options[:verbose]}")
+
+# Initialize players
+players = []
+commands = ARGV + [nil,nil,nil,nil] # Pad...
+commands = commands[0..3] # Then chop
+
+commands.shuffle! if options[:shuffle]
+
+commands.each_with_index do |cmd,i|
+  players[i] = cmd ? Hearts::NPCPlayer.new(i,cmd) : Hearts::HumanPlayer.new(i)
+end
+
+$logger.info('All players are ready.')
 
 
 
 # Populate and shuffle the deck
 # TODO: put this in the Card class?
-$logger.debug('Populating deck.')
-deck = []
-['S','H','C','D'].each do |suite|
-  (1..13).each do |number|
-    deck << Hearts::Card.from_string(suite + number.to_s)
-  end
-end
-
 $logger.debug('Shuffling deck.')
-deck.shuffle!
-
-
-
-# Load the players
-# TODO: Actually load from ARGV
-
-# Ruby    Hearts::NPCPlayer.new(0,'ruby dummy.rb')
-# Java    Hearts::NPCPlayer.new(0,'java -classpath ../java-example/ Player')
-# Human   Hearts::HumanPlayer.new(0)
-
-# To hide stderr from player program:
-# Hearts::NPCPlayer.new(0,'some command 2> /dev/null')
-
-
-players = [ Hearts::NPCPlayer.new(0,'java -classpath ../java-example/ Player 2> /dev/null'),
-            Hearts::NPCPlayer.new(1,'ruby ../ruby-example/dummy.rb 2> /dev/null'),
-            Hearts::NPCPlayer.new(2,'ruby ../ruby-example/dummy.rb 2> /dev/null'),
-            Hearts::NPCPlayer.new(3,'ruby ../ruby-example/dummy.rb 2> /dev/null') ]
-
-
-
-$logger.info('All players are ready.')
+deck = Hearts::Card.deck.shuffle!
 
 
 

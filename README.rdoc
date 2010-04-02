@@ -49,22 +49,32 @@ Download the new version from the {download page}[http://github.com/godfreykfc/h
   cd hearts-judge
   ruby judge.rb
 
+There are several options that you can pass:
+
+  ruby judge.rb -h
+  Usage: ruby judge.rb [options] command0 command1 ...
+      -s, --shuffle                    Shuffle the players' positions
+      -v, --verbose                    Verbose mode
+      -h, --help                       Display this message
+
+
+Unless <b>-s</b> is passed as an option, <b>command0</b> will be player 0, <b>command1</b> will be player 1, and so on. All unfilled seats are filled with human players. If the command contains spaces, quote it (i.e. ruby judge.rb "some command" "another command").
+
+To use a Java player program, you need to specify the class path (i.e. where to search for your .class file):
+  ruby judge.rb "java -classpath ../java-example/ Player"
+
+For Ruby:
+  ruby judge.rb "ruby -C../ruby-example/ dummy.rb"
+
+For Python (not sure, correct me if I am wrong):
+  ruby judge.rb "python ../python-example/test.py"
+
+If you wish to silent your program's STDERR output, add "2> /dev/null" at the end of your command (Linux/Unix), i.e.
+  ruby judge.rb "java -classpath ../java-example/ Player 2> /dev/null"
+
 === Windows support
 
 <b>IMPORTANT:</b> I have not tested the script on Windows, and it probably won't work. This is because I need to do some IO stream redirections with pipes that is probably not supported by Windows. I'd recommend testing your program on one of those CSIL machines (just SSH into it). I asked the administrators to install Ruby on all the Linux machines earlier this semester, so you should be able to run it just fine.
 
-=== Configuration
-
-In the near future, you will be able to specify your options using command line arguments, but for now you'll have to modify the source file.
-
-* To change the Logger verbosity, change *line 24* in judge.rb:
-  * <b>$logger.level = Logger::DEBUG</b>, or
-  * <b>$logger.level = Logger::INFO</b>
-* To change what player programs are used, change *line 62 - 65* in judge.rb. This example uses a human player (player 0), two Ruby dummies (player 1 and 3) and a Java player (player 2). <b>2> /dev/null</b> hides the STDERR output of a player program.
-
-  players = [ Hearts::HumanPlayer.new(0),
-              Hearts::NPCPlayer.new(1,'ruby ../ruby-example/dummy.rb 2> /dev/null'),
-              Hearts::NPCPlayer.new(2,'java -classpath ../java-example/ Player 2> /dev/null'),
-              Hearts::NPCPlayer.new(3,'ruby ../ruby-example/dummy.rb 2> /dev/null') ]
 
 Copyright (c) 2010 Godfrey Chan, released under the MIT license

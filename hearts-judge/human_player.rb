@@ -5,6 +5,8 @@ module Hearts
     attr_reader :id
     
     def initialize(id)
+      $logger.info("Player #{id} is a human player.")
+      
       @id = id
       @cards = []
     end
@@ -25,7 +27,7 @@ module Hearts
         end
         
         puts "Player #{@id} is passing #{c.join ' '} to his #{direction} (player #{to})."
-        gets
+        $stdin.gets
         c
       end
     end
@@ -35,12 +37,12 @@ module Hearts
       @cards.sort!
       puts "Player #{@id}, you received #{cards[0...3].join ' '} from player #{from}."
       show_hand
-      gets
+      $stdin.gets
     end
     
     def request_start
       puts "Player #{@id} started the game by playing a C2." 
-      gets
+      $stdin.gets
       @cards.delete Card.from_string('C2')
     end
     
@@ -52,7 +54,7 @@ module Hearts
       suite = trick_cards[0].nil? ? nil : trick_cards[0].suite
       c = validate(get_card, suite, heart_broken)
       puts "Player #{@id} is playing a #{c}."
-      gets
+      $stdin.gets
       @cards.delete c
     end
     
@@ -60,7 +62,7 @@ module Hearts
       puts "Round #{trick_no} started with player #{starter}, the trick is #{trick_cards.join ' '}."
       puts heart_broken ? "The heart has already been broken." : "The heart has yet to be broken."
       puts "Player #{winner} won this trick, gained #{points} points."
-      gets
+      $stdin.gets
     end
     
     def game_summary(points)
@@ -77,7 +79,7 @@ module Hearts
     private
     
     def get_card
-      Card.from_string(gets.chomp!)
+      Card.from_string($stdin.gets.chomp!)
     end
     
     def validate(card, suite, allows_hearts)
