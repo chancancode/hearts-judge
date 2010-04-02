@@ -132,7 +132,7 @@ module Hearts
     
     def get_card
       input = @pipe.gets.chomp!
-      $logger.debug("get_card(): raw input is #{input}")
+      $logger.debug("get_card(): raw input is '#{input}'")
       Card.from_string(input)
     end
     

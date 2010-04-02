@@ -134,7 +134,7 @@ player_points = [0,0,0,0]
       c = players[(starter+j)%4].request_play(i,starter,trick,heart_broken)
     end
     
-    $logger.info("Player #{i} played a #{c}.")
+    $logger.info("Player #{j} played a #{c}.")
     
     heart_broken = true if c.suite == 'H'
     trick_suite = c.suite if j == 0
