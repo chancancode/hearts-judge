@@ -35,7 +35,7 @@ OptionParser.new do |opts|
   
   options[:shuffle] = false
   opts.on("-s", "--shuffle", "Shuffle the players' positions") do
-    options[:verbose] = true
+    options[:shuffle] = true
   end
   
   options[:verbose] = false
