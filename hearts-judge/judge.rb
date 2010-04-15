@@ -50,6 +50,11 @@ module Hearts
           @options[:verbose] = true
         end
         
+        @options[:interactive] = false
+        opts.on("-i", "--interactive", "Interactive mode") do
+          @options[:interactive] = true
+        end
+        
         @options[:replay] = false
         opts.on("-r", "--replay", "Enable replaying of a set") do
           @options[:replay] = true
@@ -105,8 +110,10 @@ module Hearts
             next_game!
             deal_cards(deck.clone)
             pass_cards
+            if @options[:interactive];$stderr.puts "<Press enter to continue>";$stdin.gets;end
             game_on
             clean_up
+            if @options[:interactive];$stderr.puts "<Press enter to continue>";$stdin.gets;end
             
             temp = deck.slice!(0,13)
             deck = deck + temp
@@ -118,12 +125,15 @@ module Hearts
             @points[i] += (@set_points[i] / 4.0)
             $logger.info("#{player} scored #{@set_points[i] / 4.0} points in this set. Total = #{@points[i]}.")
           end
+          if @options[:interactive];$stderr.puts "<Press enter to continue>";$stdin.gets;end
         else
           next_game!
           deal_cards
           pass_cards
+          if @options[:interactive];$stderr.puts "<Press enter to continue>";$stdin.gets;end
           game_on
           clean_up
+          if @options[:interactive];$stderr.puts "<Press enter to continue>";$stdin.gets;end
         end
       end
     end
@@ -191,7 +201,7 @@ module Hearts
         
         4.times do
           player = trick.current_player
-                    
+          
           if @current_game.new? && trick.empty?
             player.request_start(trick)
           else
@@ -201,8 +211,10 @@ module Hearts
           trick.next_player!
         end
         
-        $logger.info("Player #{trick.winner} won the trick, gained #{trick.points} points.")
+        $logger.info("#{trick.winner} won the trick, gained #{trick.points} points.")
         @current_game.next_trick!
+        
+        if @options[:interactive];$stderr.puts "<Press enter to continue>";$stdin.gets;end
       end
     end
    

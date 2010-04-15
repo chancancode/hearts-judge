@@ -1,14 +1,14 @@
 class Array
   def randomly_pick(n=nil)
     if n.nil?
-      shuffle.first
+      self.shuffle.first
     else
-      shuffle.first(n)
+      self.shuffle.first(n)
     end
   end
   
   def shuffle
-    clone.shuffle!
+    self.clone.shuffle!
   end
 
   def shuffle!
@@ -21,11 +21,8 @@ class Array
     self
   end
   
-  def map_with_index
-    result = []
-    self.each_with_index do |elt, idx|
-      result << yield(elt, idx)
-    end
-    result
+  def delete_first(obj)
+    i = self.index(obj)
+    self.delete_at(i) unless i.nil?
   end
 end

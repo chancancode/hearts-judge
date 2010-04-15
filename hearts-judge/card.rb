@@ -1,3 +1,5 @@
+require 'constants.rb'
+
 module Hearts
   class Card
     include Comparable   
@@ -46,12 +48,27 @@ module Hearts
       score <=> other.score
     end
     
+    # For default sort (by suit then rank)
+    
     def score
       if @rank == 1
         @suit * 100 + 14
       else
         @suit * 100 + @rank
       end
+    end
+    
+    # For alternative sort (least unwanted to most unwanted)
+        
+    def rank_score
+      return 9999 if self == S12 # Queen of spades
+      return 8999 if self == S1  # Aces of spades
+      return 7999 if self == S13 # King of spades
+      return 6999 if self == H1  # Aces of hearts
+      return 5999 + @rank if @suit == HEARTS && @rank > 6 # High hearts first
+      return 4999 + @suit if @rank == ACES # Handle special case of aces (rank = 1)
+      return 100 * @rank + 4 if @suit == HEARTS # Hearts should be the largest suit
+      100 * @rank + @suit # Default
     end
     
     # Class methods

@@ -32,7 +32,7 @@ module Hearts
     # Receive the hand from the judge
     def deal_cards(cards)
       @cards = cards
-      $logger.debug("#{self} - cards before passing: #{@cards.join ' '}")
+      $logger.debug("#{self} - cards before passing: #{@cards.sort.join ' '}")
     end
     
     # Pick three cards to pass
@@ -44,7 +44,7 @@ module Hearts
     # Receive the cards passed on to you 
     def receive_pass(player,cards)
       @cards = cards + @cards unless player == self
-      $logger.debug("#{self} - cards after passing: #{@cards.join ' '}")
+      $logger.debug("#{self} - cards after passing: #{@cards.sort.join ' '}")
     end
     
     # Start the game with a C2
@@ -59,6 +59,10 @@ module Hearts
     end
     
     def trick_summary(trick)
+    end
+    
+    # Callback for played a card
+    def card_played(trick,card)
     end
     
     # Callback for winning a trick (taking the points)
@@ -97,7 +101,19 @@ module Hearts
     def validate(trick,card)
       $logger.debug("Validating #{card}: suit=#{trick ? trick.suit : 'N/A'}, heart_broken=#{@game.heart_broken?}") 
       
-      # Find all valid cards
+      valid = valid_cards(trick)
+      
+      if valid.include? card
+        $logger.debug("#{card} is valid") 
+        card
+      else
+        $logger.debug("#{card} is invalid") 
+        valid.randomly_pick
+      end
+    end
+    
+    # Find all valid cards for this trick
+    def valid_cards(trick)
       valid = @cards
       
       if trick.nil?
@@ -125,13 +141,7 @@ module Hearts
         end
       end
       
-      if valid.include? card
-        $logger.debug("#{card} is valid") 
-        card
-      else
-        $logger.debug("#{card} is invalid") 
-        valid.randomly_pick
-      end
+      valid
     end
   end
 end

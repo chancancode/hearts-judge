@@ -137,7 +137,6 @@ module Hearts
     
     def game_ended
       @pipe.puts @game.points.join $/
-      @pipe.puts
       @pipe.close_write
     end
     

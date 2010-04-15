@@ -4,8 +4,7 @@ require 'card.rb'
 
 module Hearts
   class Game
-    attr_reader :current_trick
-    attr_accessor :players
+    attr_reader :current_trick, :players
     
     def initialize
       @players = []
