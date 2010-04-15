@@ -51,12 +51,13 @@ Download the new version from the {download page}[http://github.com/godfreykfc/h
 
 There are several options that you can pass:
 
-  ruby judge.rb -h
   Usage: ruby judge.rb [options] command0 command1 ...
       -s, --shuffle                    Shuffle the players' positions
       -v, --verbose                    Verbose mode
-      -h, --help                       Display this message
-
+      -r, --replay                     Enable replaying of a set
+      -d, --delay N                    Delay N seconds before killing clients
+      -p, --points N                   Play until a player scored N points
+      -h, --help                       Display this message  
 
 Unless <b>-s</b> is passed as an option, <b>command0</b> will be player 0, <b>command1</b> will be player 1, and so on. All unfilled seats are filled with human players. If the command contains spaces, quote it (i.e. ruby judge.rb "some command" "another command").
 
