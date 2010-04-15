@@ -61,7 +61,7 @@ module Hearts
         end
         
         @options[:points] = 100
-        opts.on("-p", "--points N", DecimalInteger, "Play until a player scored N points") do |n|
+        opts.on("-p", "--points N", OptionParser::DecimalInteger, "Play until a player scored N points") do |n|
           @options[:points] = n
         end
         
