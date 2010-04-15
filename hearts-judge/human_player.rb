@@ -1,79 +1,105 @@
-require 'array_extension.rb'
+require 'constants.rb'
+require 'game.rb'
+require 'trick.rb'
+require 'card.rb'
+require 'player.rb'
 
 module Hearts
-  class HumanPlayer
-    attr_reader :id
-    
-    def initialize(id)
-      $logger.info("Player #{id} is a human player.")
+  class HumanPlayer < Player    
+    def initialize(id, game)
+      $logger.info("Player #{id} is a human")
       
-      @id = id
-      @cards = []
+      $stdout.print "Player #{id}, what's your name? "
+      $stdout.flush
+      name = $stdin.gets.chomp!
+      
+      $logger.debug("Player #{id} responded with #{name}")
+      
+      if name.empty?
+        name = "Unnamed human player"
+      end
+      
+      $stdout.puts "Welcome, #{name}"
+      
+      # Call parent initializer
+      super(id,name,game)
     end
     
+    # Receive the hand from the judge
     def deal_cards(cards)
-      @cards = cards.sort!
+      super
+      @cards.sort!
       show_hand
     end
     
-    def request_pass(to, direction)
-      unless direction == :nopass
+    # Pick three cards to pass
+    def request_pass(player,direction)
+      unless player == self
         show_hand
-        puts "Player #{@id}, please pass THREE cards to your #{direction} (player #{to}):"
-        c = [get_card,get_card,get_card]
+        $stdout.puts "#{self}, please pass THREE cards to your #{direction} (#{player}):"
+        input = [get_card,get_card,get_card]
         
-        c.map! do |e|
-          @cards.delete validate(e, nil, true)
-        end
+        input.map! { |c| @cards.delete validate(nil,c) }
         
-        puts "Player #{@id} is passing #{c.join ' '} to his #{direction} (player #{to})."
+        $logger.debug("#{self} is passing #{input.join ' '} to #{player}")
+        $stdout.puts "#{self} is passing #{input.join ' '} to his #{direction} (#{player})."
         $stdin.gets
-        c
+        input
       end
     end
     
-    def receive_pass(from, cards)
-      @cards += cards
-      @cards.sort!
-      puts "Player #{@id}, you received #{cards[0...3].join ' '} from player #{from}."
+    # Receive the cards passed on to you 
+    def receive_pass(player,cards)
+      unless player == self
+        super
+        @cards.sort!
+        $stdout.puts "#{self}, you received #{cards[0...3].join ' '} from #{player}."
+        show_hand
+        $stdin.gets
+      end
+    end
+    
+    # Start the game with a C2
+    def request_start(trick)
+      $stdout.puts "#{self}, you will start the game by playing a C2." 
+      $stdin.gets
+      super
+    end
+    
+    # Pick a card to play
+    def request_play(trick)
+      $stdout.puts "Round #{trick.number} started by #{trick.starter}, current trick is #{trick.cards.join ' '}."
+      $stdout.puts @game.heart_broken? ? "The heart has already been broken." : "The heart has yet to be broken."
       show_hand
+      $stdout.puts "#{self}, please play a card:"
+      card = validate(trick,get_card)
+      $stdout.puts "#{self} is playing a #{card}."
+      $stdin.gets
+      
+      play(trick,card,false)
+    end
+    
+    def trick_summary(trick)
+      $stdout.puts "Round #{trick.number} started with player #{trick.starter}, the trick is #{trick.cards.join ' '}."
+      $stdout.puts @game.heart_broken? ? "The heart has already been broken." : "The heart has yet to be broken."
+      $stdout.puts "#{trick.winner} won this trick, gained #{trick.points} points."
       $stdin.gets
     end
     
-    def request_start
-      puts "Player #{@id} started the game by playing a C2." 
-      $stdin.gets
-      @cards.delete Card.from_string('C2')
+    def game_ended
+      $stdout.puts "#{self}, you scored #{@game.points[@id]} points in this game."
     end
     
-    def request_play(trick_no, starter, trick_cards, heart_broken)
-      puts "Round #{trick_no} started with player #{starter}, current trick is #{trick_cards.join ' '}."
-      puts heart_broken ? "The heart has already been broken." : "The heart has yet to be broken."
-      show_hand
-      puts "Player #{@id}, please play a card:"
-      suite = trick_cards[0].nil? ? nil : trick_cards[0].suite
-      c = validate(get_card, suite, heart_broken)
-      puts "Player #{@id} is playing a #{c}."
-      $stdin.gets
-      @cards.delete c
-    end
+    protected
     
-    def round_summary(trick_no, starter, trick_cards, heart_broken, winner, points)
-      puts "Round #{trick_no} started with player #{starter}, the trick is #{trick_cards.join ' '}."
-      puts heart_broken ? "The heart has already been broken." : "The heart has yet to be broken."
-      puts "Player #{winner} won this trick, gained #{points} points."
-      $stdin.gets
-    end
-    
-    def game_summary(points)
-    end
-    
-    def has?(card)
-      card = Card.from_string(card) if card.is_a? String
-      @cards.include? card
-    end
-    
-    def kill!
+    def validate(trick,card)
+      temp = super
+      
+      if temp != card
+        puts "#{@name}, your choice of #{card} is not valid. Picking #{temp} for you instead."
+      end
+      
+      temp
     end
     
     private
@@ -82,31 +108,8 @@ module Hearts
       Card.from_string($stdin.gets.chomp!)
     end
     
-    def validate(card, suite, allows_hearts)
-      r = card
-      
-      until has?(r) &&
-            (suite.nil? || r.suite == suite || out_of?(suite)) &&
-            (r.suite != 'H' || allows_hearts || (suite.nil? && all_hearts?) || out_of?(suite))
-        r = @cards.randomly_pick(1)[0]
-      end
-      
-      puts "#{card} is not a valid choice, picking a random card #{r} instead." unless r == card
-      
-      r
-    end
-    
-    def out_of?(suite)
-      return false if suite.nil?
-      @cards.all? { |card| card.suite != suite } 
-    end
-    
-    def all_hearts?
-      @cards.all? { |card| card.suite == 'H' }
-    end
-    
     def show_hand
-      puts "Player #{@id}, here is your hand:"
+      puts "#{self}, this is your hand:"
       puts @cards.join ' '
     end
   end

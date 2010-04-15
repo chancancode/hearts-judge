@@ -1,18 +1,73 @@
 module Hearts
   class Card
     include Comparable   
-    attr_reader :suite, :rank
+    attr_reader :suit, :rank
     
-    @@suite_order = { 'S'=>1, 'H'=>2, 'C'=>3, 'D'=>4 }
-    @@cards = {}
+    @@cache = {}
     @@deck = []
+    
+    def initialize(suit,rank)
+      @suit = suit
+      @rank = rank
+      @@cache[self.to_s] = self
+    end
+    
+    def to_s
+      Hearts.suit_to_string(@suit) + @rank.to_s
+    end
+    
+    def error?
+      @suit == ERROR
+    end
+    
+    def hearts?
+      @suit == HEARTS
+    end
+    
+    def qos?
+      @suit == SPADES && @rank == QUEEN
+    end
+    
+    def points?
+      points > 0
+    end
+    
+    def points
+      if hearts?
+        1
+      elsif qos?
+        13
+      else
+        0
+      end
+    end
+    
+    def <=>(other)
+      score <=> other.score
+    end
+    
+    def score
+      if @rank == 1
+        @suit * 100 + 14
+      else
+        @suit * 100 + @rank
+      end
+    end
+    
+    # Class methods
+    
+    def self.from_string(value)
+      s = Hearts.string_to_suit(value[0...1])
+      r = value[1..-1].to_i
+      @@cache[value] ||= Card.new(s,r)
+    end
     
     def self.deck
       if @@deck.empty?
         # Generate the 52 cards        
-        ['S','H','C','D'].each do |suite|
-          (1..13).each do |number|
-            @@deck << Card.from_string(suite + number.to_s)
+        [SPADES,HEARTS,CLUBS,DIAMONDS].each do |s|
+          (1..13).each do |r|
+            @@deck << Card.new(s,r)
           end
         end
         
@@ -20,27 +75,6 @@ module Hearts
       end
       
       @@deck.dup
-    end
-    
-    def self.from_string(value)
-      @@cards[value] ||= Card.new(value.to_s)
-    end
-      
-    def initialize(value)
-      @suite = value[0...1].to_s
-      @rank = value[1..-1].to_i
-    end
-    
-    def to_s
-      @suite + @rank.to_s
-    end
-    
-    def <=>(other)
-      score <=> other.score
-    end
-        
-    def score
-      @@suite_order[@suite].to_i * 100 + ((@rank - 2) % 13)
     end
   end
 end

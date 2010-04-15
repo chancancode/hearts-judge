@@ -1,164 +1,158 @@
-require 'array_extension.rb'
+require 'constants.rb'
+require 'game.rb'
+require 'trick.rb'
+require 'card.rb'
+require 'player.rb'
 
 module Hearts
-  class NPCPlayer
-    attr_reader :id
-    
-    def initialize(id, command)
-      $logger.info("Player #{id}='#{command}'.")
+  class NPCPlayer < Player    
+    def initialize(id, game, command)
+      $logger.info("Player #{id}='#{command}'")
       
+      $logger.debug("Launching '#{command}'")
       @pipe = IO.popen(command, 'r+')
-      @id = id
-      @cards = []
       
-      # Test the agent...
-      $logger.debug("Waiting for player #{@id} to get ready...")
-      response = @pipe.gets.chomp!
-      raise "Agent initialization error. Expecting 'READY\\n' from agent, got '#{response}'." unless response == 'READY'
+      $logger.debug("Waiting for player #{id} to get ready...")
+      name = @pipe.gets.chomp!
       
-      $logger.debug("Player #{id} is ready.")
+      $logger.debug("Player #{id} responded with #{name}")
+      
+      if name == 'READY' || name.empty?
+        name = "Unnamed #{command.split[0]} player"
+      end
+      
+      $logger.debug("Player #{id} is ready")
       
       # Send player ID
-      @pipe.puts @id
+      @pipe.puts id
+      @pipe.flush
+      
+      # Call parent initializer
+      super(id,name,game)
     end
     
+    # Receive the hand from the judge
     def deal_cards(cards)
-      @cards = cards
+      super
       @pipe.puts cards.join $/
       @pipe.puts
+      @pipe.flush
     end
     
-    def request_pass(to, direction)
+    # Pick three cards to pass
+    def request_pass(player,direction)
       # Ask nicely
       @pipe.puts 'PL' if direction == :left
       @pipe.puts 'PR' if direction == :right
       @pipe.puts 'PA' if direction == :across
       @pipe.puts 'NP' if direction == :nopass
-      @pipe.puts to
+      @pipe.puts player.id
       @pipe.puts
       
       # Wait for input here
-      c = [get_card,get_card,get_card]
-            
-      # Validate
-      c.map! { |e| @cards.delete validate(e, nil, true) } unless direction == :nopass
+      input = [get_card,get_card,get_card]
       
-      $logger.debug("Player #{@id} is passing #{c.join ' '} to player #{to}.")
+      if direction == :nopass
+        @pipe.puts 'JUNK'
+        @pipe.puts 'JUNK'
+        @pipe.puts 'JUNK'
+        @pipe.puts
+        @pipe.flush
+      else
+        # Validate and remove from hand
+        input.map! { |c| @cards.delete validate(nil,c) }
+        
+        $logger.debug("#{self} is passing #{input.join ' '} to #{player}")
+        
+        # Confirmation
+        @pipe.puts input.join $/
+        @pipe.puts
+        @pipe.flush
+      end
       
-      # Confirmation
-      @pipe.puts c.join $/
-      @pipe.puts ''
-      
-      c
+      input
     end
     
-    def receive_pass(from, cards)
-      # Imporant: the new cards should come first in the list
-      @cards = cards + @cards unless from == @id
-      
-      @pipe.puts from
+    # Receive the cards passed on to you 
+    def receive_pass(player,cards)
+      super
+      @pipe.puts player.id
       @pipe.puts @cards.join $/
       @pipe.puts
+      @pipe.flush
     end
     
-    def request_start
+    # Start the game with a C2
+    def request_start(trick)
       @pipe.puts '0' # Round 0
       @pipe.puts @id # Started with self
       @pipe.puts '0' # Heart not broken
       @pipe.puts '0' # 0 cards follows
       @pipe.puts
+      @pipe.flush
       
       # Wait for input here (then ignore it)
-      @pipe.gets      
+      input = @pipe.gets.chomp!
       
       # Confirmation
-      @pipe.puts 'C2' # Choice ignored
+      $logger.debug("Ignoring player's choice '#{input}'")
+      @pipe.puts 'C2'
       @pipe.puts
+      @pipe.flush
       
-      $logger.debug("Starting game, ignoring player's choice. Playing a C2.")
-      
-      # Remove card from hand
-      @cards.delete Card.from_string('C2')
+      super
     end
     
-    def request_play(trick_no, starter, trick_cards, heart_broken)
-      @pipe.puts trick_no
-      @pipe.puts starter
-      @pipe.puts heart_broken ? '1' : '0'
-      @pipe.puts trick_cards.count
-      @pipe.puts trick_cards.join $/ unless trick_cards.empty?
+    # Pick a card to play
+    def request_play(trick)
+      @pipe.puts trick.number
+      @pipe.puts trick.starter.id
+      @pipe.puts @game.heart_broken? ? '1' : '0'
+      @pipe.puts trick.count
+      @pipe.puts trick.cards.join $/ unless trick.empty?
       @pipe.puts
+      @pipe.flush
       
-      # Wait for input here
-      suite = trick_cards[0].nil? ? nil : trick_cards[0].suite
-      
-      c = get_card      
-      c = validate(c, suite, heart_broken)
+      # Wait for input here      
+      card = validate(trick,get_card)
       
       # Confirmation
-      @pipe.puts c
+      @pipe.puts card
       @pipe.puts
+      @pipe.flush
       
-      # Remove card from hand
-      @cards.delete c
+      play(trick,card,false)
     end
     
-    def round_summary(trick_no, starter, trick_cards, heart_broken, winner, points)
-      @pipe.puts trick_no
-      @pipe.puts starter
-      @pipe.puts heart_broken ? '1' : '0'
-      @pipe.puts trick_cards.join $/
-      @pipe.puts winner
-      @pipe.puts points
+    def trick_summary(trick)
+      @pipe.puts trick.number
+      @pipe.puts trick.starter.id
+      @pipe.puts @game.heart_broken? ? '1' : '0'
+      @pipe.puts trick.cards.join $/ unless trick.empty?
+      @pipe.puts trick.winner
+      @pipe.puts trick.points
       @pipe.puts
+      @pipe.flush
     end
     
-    def game_summary(points)
-      @pipe.puts points.join $/
+    def game_ended
+      @pipe.puts @game.points.join $/
       @pipe.puts
-    end
-    
-    def has?(card)
-      card = Card.from_string(card) if card.is_a? String
-      @cards.include? card
-    end
-    
-    def kill!
       @pipe.close_write
+    end
+    
+    # Clean up
+    def kill!
       @pipe.close
     end
     
     private
     
     def get_card
+      $logger.debug("#{self} is waiting for input...")
       input = @pipe.gets.chomp!
-      $logger.debug("get_card(): raw input is '#{input}'")
+      $logger.debug("#{self}: raw input is '#{input}'")
       Card.from_string(input)
-    end
-    
-    def validate(card, suite, allows_hearts)
-      $logger.debug("Validating #{card}: suite=#{suite}, allows_hearts=#{allows_hearts}.")
-      
-      r = card
-      
-      until has?(r) &&
-            (suite.nil? || r.suite == suite || out_of?(suite)) &&
-            (r.suite != 'H' || allows_hearts || (suite.nil? && all_hearts?) || out_of?(suite))
-        r = @cards.randomly_pick(1)[0]
-      end
-      
-      $logger.debug("Validation completed for #{card}: picked #{r}.")
-            
-      r
-    end
-    
-    def out_of?(suite)
-      return false if suite.nil?
-      @cards.all? { |card| card.suite != suite } 
-    end
-    
-    def all_hearts?
-      @cards.all? { |card| card.suite == 'H' }
     end
   end
 end

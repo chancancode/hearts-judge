@@ -1,6 +1,10 @@
 class Array
-  def randomly_pick(n=1)
-    shuffle[0...n]
+  def randomly_pick(n=nil)
+    if n.nil?
+      shuffle.first
+    else
+      shuffle.first(n)
+    end
   end
   
   def shuffle
