@@ -32,6 +32,7 @@ module Hearts
     # Receive the hand from the judge
     def deal_cards(cards)
       @cards = cards
+      $logger.debug("#{self} - cards before passing: #{@cards.join ' '}")
     end
     
     # Pick three cards to pass
@@ -43,6 +44,7 @@ module Hearts
     # Receive the cards passed on to you 
     def receive_pass(player,cards)
       @cards = cards + @cards unless player == self
+      $logger.debug("#{self} - cards after passing: #{@cards.join ' '}")
     end
     
     # Start the game with a C2

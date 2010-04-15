@@ -128,8 +128,8 @@ module Hearts
       @pipe.puts trick.number
       @pipe.puts trick.starter.id
       @pipe.puts @game.heart_broken? ? '1' : '0'
-      @pipe.puts trick.cards.join $/ unless trick.empty?
-      @pipe.puts trick.winner
+      @pipe.puts trick.cards.join $/
+      @pipe.puts trick.winner.id
       @pipe.puts trick.points
       @pipe.puts
       @pipe.flush
